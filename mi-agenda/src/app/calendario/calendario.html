@@ -1,35 +1,42 @@
 <!-- Estructura principal de 3 columnas -->
 <div class="app-container">
     
-    <!-- LEFT SIDEBAR (Navegación) - Usando el HTML que proporcionaste -->
+    <!-- ---------------- SIDEBAR IZQUIERDA ---------------- -->
     <div class="sidebar">
-        <h2 class="logo">🗓️AgendaPersonal</h2>
+        <div class="logo-container">
+            <!-- Icono y Logo juntos como en la imagen -->
+            <i class="fa-solid fa-calendar-check logo-icon"></i>
+            <h2 class="logo">AgendaPersonal</h2>
+        </div>
+        
         <nav class="menu">
-            <!-- Usamos 'href' temporalmente en lugar de 'routerLink' para este ejemplo simple -->
+            <!-- Se añade el <span> para el texto que se oculta en móvil -->
             <a href="#" class="active">
-                <i class="fa-regular fa-calendar"></i> Calendario
+                <i class="fa-regular fa-calendar"></i> <span>Calendario</span>
+            </a>
+            
+            <!-- Trigger 1: Se usa <button> por semántica de acción -->
+            <button class="menu-item" (click)="openEventosModal($event)">
+                <i class="fa-regular fa-clock"></i> <span>Eventos</span>
+            </button>
+            
+            <a href="#">
+                <i class="fa-regular fa-circle-check"></i> <span>Tareas</span>
             </a>
             <a href="#">
-                <i class="fa-regular fa-clock"></i> Eventos
-            </a>
-            <a href="#">
-                <i class="fa-regular fa-circle-check"></i> Tareas
-            </a>
-             <a href="#">
-                <i class="fa-solid fa-gear"></i> Configuración
+                <i class="fa-solid fa-gear"></i> <span>Configuración</span>
             </a>
         </nav>
     </div>
 
-    <!-- MAIN CONTENT AREA (Header y Calendario) -->
+    <!-- ---------------- MAIN CONTENT AREA (Header y Calendario) ---------------- -->
     <main class="main-content">
-        <!-- HEADER - Usando el HTML que proporcionaste (adaptado a placeholder de imagen) -->
         <header class="header">
             <div class="left">
                 <button class="btn-home"><i class="fa-solid fa-house"></i> Inicio</button>
             </div>
             <div class="right">
-                <img src="https://placehold.co/40x40/4F46E5/FFFFFF?text=P" alt="Perfil" class="profile-img" />
+                <img src="https://placehold.co/40x40/752174/FFFFFF?text=P" alt="Perfil" class="profile-img" />
                 <button class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
             </div>
         </header>
@@ -37,73 +44,132 @@
         <!-- CONTROLES Y VISTA DEL CALENDARIO -->
         <div class="calendar-view">
             <div class="calendar-controls">
-                <!-- Botones de navegación (Atrás, Hoy, Adelante) -->
                 <div class="nav-buttons">
                     <button class="control-btn" (click)="navigate(-1)" aria-label="Anterior">&leftarrow;</button>
                     <button class="control-btn" (click)="setToday()">Hoy</button>
                     <button class="control-btn" (click)="navigate(1)" aria-label="Siguiente">&rightarrow;</button>
                 </div>
-                
-                <!-- Título: Muestra el mes/año actual -->
-                <h2 class="month-year">{{ current() | date:'MMMM yyyy' | titlecase }}</h2> 
-                
-                <!-- Alternador de Vista Mes/Semana -->
+
+                <h2 class="month-year">{{ current() | date:'MMMM yyyy' | titlecase }}</h2>
+
                 <div class="view-switch">
-                    <button 
-                        class="view-btn" 
-                        [class.active]="viewMode() === 'month'"
-                        (click)="setViewMode('month')">Mes
-                    </button>
-                    <button 
-                        class="view-btn" 
-                        [class.active]="viewMode() === 'week'"
-                        (click)="setViewMode('week')">Semana
-                    </button>
+                    <button class="view-btn" [class.active]="viewMode() === 'month'" (click)="setViewMode('month')">Mes</button>
+                    <button class="view-btn" [class.active]="viewMode() === 'week'" (click)="setViewMode('week')">Semana</button>
                 </div>
             </div>
-            
-            <!-- CONTENIDO PRINCIPAL DEL CALENDARIO (Alterna Mes/Semana) -->
+
             <div class="calendar-content">
                 @if (viewMode() === 'month') {
                     <div class="calendar-month-grid">
-                        <!-- Nombres de los días de la semana -->
+                        <!-- Nombres de los días (Dom, Lun, etc.) -->
                         @for (dayName of dayNames; track $index) {
                             <div class="day-name">{{ dayName }}</div>
                         }
-                        
-                        <!-- Celdas del Mes - Usando el monthGrid() computado -->
+
+                        <!-- Cuadrícula de días -->
                         @for (day of monthGrid(); track day.date.getTime()) {
                             <div 
                                 class="calendar-day" 
-                                [class.is-current-month]="day.isCurrentMonth"
-                                [class.is-today]="day.isToday">
-                                <span class="text-xs sm:text-sm font-semibold">{{ day.date.getDate() }}</span>
-                                <!-- Placeholder de evento simple -->
-                                @if (day.isToday) {
-                                    <span class="dot bg-indigo-500"></span>
+                                [class.is-current-month]="day.isCurrentMonth" 
+                                [class.is-today]="day.isToday"
+                                [class.has-events]="hasEvents(day.date)"
+                                (click)="openEventosModal()"
+                            >
+                                <!-- Número del día -->
+                                <span class="font-semibold text-base">{{ day.date.getDate() }}</span>
+                                
+                                <!-- Simulación de evento o tarea -->
+                                @if (hasEvents(day.date)) {
+                                    <span class="event-marker">Tarea</span>
                                 }
-                                @if (day.date.getDate() === 5 && day.isCurrentMonth) {
-                                    <span class="text-xs text-green-600 mt-1">Tarea</span>
-                                }
+                                
                             </div>
                         }
                     </div>
                 } @else {
-                    <!-- Vista de Semana Pendiente de Implementar (Placeholder) -->
                     <div class="calendar-week-view">
                         <h3 class="text-xl font-bold mb-2">Vista Semanal (Próximamente)</h3>
                         <p class="text-gray-600">Aquí se mostrará el detalle de la semana que inicia el {{ current() | date:'dd/MM/yyyy' }}.</p>
-                        <div class="p-4 mt-4 bg-gray-50 rounded-lg border border-gray-200">
-                             <p class="text-sm font-medium text-gray-500">Usa los botones de navegación para avanzar o retroceder 7 días.</p>
-                        </div>
                     </div>
                 }
             </div>
         </div>
-
     </main>
-    
-    <!-- RIGHT SIDEBAR (Eventos de la Semana) - Usamos el componente separado -->
-    <app-semana></app-semana>
 
+    <!-- ---------------- RIGHT SIDEBAR (Componente app-semana) ---------------- -->
+    <app-semana ></app-semana>
+
+    <!-- ---------------- MODAL DE EVENTOS ---------------- -->
+    @if (modalEventosOpen()) {
+      <div class="modal-overlay" (click)="closeEventosModal()">
+        <!-- Se añaden atributos ARIA para accesibilidad -->
+        <div 
+            class="modal eventos-modal" 
+            (click)="$event.stopPropagation()"
+            role="dialog"
+            aria-labelledby="eventos-modal-title"
+            aria-modal="true"
+        >
+
+          <!-- Header modal -->
+          <div class="modal-header">
+            <h2 id="eventos-modal-title">📌 Eventos</h2> 
+            <button class="btn-close" (click)="closeEventosModal()" aria-label="Cerrar modal">✕</button>
+          </div>
+
+          <!-- Acciones: nuevo evento -->
+          <div class="modal-actions-top">
+            <button class="btn-primary" (click)="startAgregar()">+ Nuevo Evento</button>
+            <span class="muted">{{ eventos().length }} evento(s)</span>
+          </div>
+
+          <!-- Lista de eventos -->
+          <div class="event-list">
+            @if (eventos().length === 0) {
+              <div class="empty">No hay eventos todavía.</div>
+            } @else {
+              @for (evt of eventos(); track evt.id) {
+                <div class="event-item">
+                  <div class="event-info">
+                    <div class="event-title">{{ evt.titulo }}</div>
+                    <div class="event-date">{{ evt.fecha | date:'EEEE d MMM y' }}</div>
+                    <!-- Uso de @if para la descripción -->
+                    @if (evt.descripcion) {
+                        <div class="event-desc">{{ evt.descripcion }}</div>
+                    }
+                  </div>
+                  <div class="event-actions">
+                    <button class="btn-sm" (click)="startEditar(evt.id)">Editar</button>
+                    <button class="btn-sm danger" (click)="eliminarEvento(evt.id)">Borrar</button>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+
+          <!-- FORMULARIO (aparece cuando agregando() o editando() != null) -->
+          @if (agregando() || editando() !== null) {
+            <hr class="form-divider" />
+            <div class="form-section">
+              <h3>@if (editando() !== null) { Editar Evento } @else { Nuevo Evento }</h3>
+
+              <label for="eventoTitulo">Título</label>
+              <input type="text" id="eventoTitulo" [(ngModel)]="eventoTitulo" />
+
+              <label for="eventoFecha">Fecha</label>
+              <input type="date" id="eventoFecha" [(ngModel)]="eventoFecha" />
+
+              <label for="eventoDescripcion">Descripción</label>
+              <textarea rows="3" id="eventoDescripcion" [(ngModel)]="eventoDescripcion"></textarea>
+
+              <div class="form-actions">
+                <button class="btn-cancel" (click)="cancelForm()">Cancelar</button>
+                <button class="btn-save" (click)="guardarEvento()">Guardar</button>
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
 </div>
