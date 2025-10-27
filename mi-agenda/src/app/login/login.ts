@@ -26,30 +26,30 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
 
-   constructor(private http: HttpClient, private router: Router) {} 
+  constructor(private http: HttpClient, private router: Router) {} 
 
   login() {
-    console.log('Email:', this.email);
-    console.log('Password:', this.password);
 
-    this.http.post('http://localhost:8000/api/login', { 
-      email: this.email, 
-      password: this.password 
-    }).subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          // No se usa alert() para evitar problemas en el navegador, usa un cuadro de mensaje
-          // o loguea la respuesta.
-          console.log('Bienvenido');
-          this.router.navigate(['/calendario']);
-        } else {
-          console.log(res.message);
-        }
-      },
-      error: (err) => {
-        console.error('Error al conectar con el backend', err);
-        console.log('No se pudo conectar con el servidor');
-      }
-    });
-  }
+        this.http.post('http://localhost:8000/api/login', { 
+            email: this.email, 
+            password: this.password 
+        }).subscribe({
+            next: (res: any) => {
+                if (res.success && res.token) {
+                    localStorage.setItem('user_token', res.token);
+                    console.log('Login exitoso.');
+                    this.router.navigate(['/calendario']);
+                } else if (res.success) {
+                    console.error('Login exitoso pero no se recibió el token.');
+                    this.router.navigate(['/calendario']); 
+                } else {
+                    console.log(res.message);
+                }
+            },
+            error: (err) => {
+                console.error('Error al conectar con el backend', err);
+                console.log('No se pudo conectar con el servidor');
+            }
+        });
+    }
 }

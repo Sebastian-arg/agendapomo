@@ -10,8 +10,7 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SemanaComponent {
-    // Lógica para cargar los eventos de la semana si es necesario
     eventos: any[] = [
-     
+    
     ];
 }

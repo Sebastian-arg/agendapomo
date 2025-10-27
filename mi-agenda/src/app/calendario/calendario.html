@@ -1,21 +1,16 @@
-<!-- Estructura principal de 3 columnas -->
 <div class="app-container">
     
-    <!-- ---------------- SIDEBAR IZQUIERDA ---------------- -->
     <div class="sidebar">
         <div class="logo-container">
-            <!-- Icono y Logo juntos como en la imagen -->
             <i class="fa-solid fa-calendar-check logo-icon"></i>
             <h2 class="logo">AgendaPersonal</h2>
         </div>
         
         <nav class="menu">
-            <!-- Se añade el <span> para el texto que se oculta en móvil -->
             <a href="#" class="active">
                 <i class="fa-regular fa-calendar"></i> <span>Calendario</span>
             </a>
             
-            <!-- Trigger 1: Se usa <button> por semántica de acción -->
             <button class="menu-item" (click)="openEventosModal($event)">
                 <i class="fa-regular fa-clock"></i> <span>Eventos</span>
             </button>
@@ -29,19 +24,17 @@
         </nav>
     </div>
 
-    <!-- ---------------- MAIN CONTENT AREA (Header y Calendario) ---------------- -->
     <main class="main-content">
         <header class="header">
             <div class="left">
                 <button class="btn-home"><i class="fa-solid fa-house"></i> Inicio</button>
             </div>
             <div class="right">
-                <img src="https://placehold.co/40x40/752174/FFFFFF?text=P" alt="Perfil" class="profile-img" />
-                <button class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+              <img src="https://placehold.co/40x40/752174/FFFFFF?text=P" alt="Perfil" class="profile-img" />
+              <button class="btn-logout" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
             </div>
         </header>
 
-        <!-- CONTROLES Y VISTA DEL CALENDARIO -->
         <div class="calendar-view">
             <div class="calendar-controls">
                 <div class="nav-buttons">
@@ -61,12 +54,10 @@
             <div class="calendar-content">
                 @if (viewMode() === 'month') {
                     <div class="calendar-month-grid">
-                        <!-- Nombres de los días (Dom, Lun, etc.) -->
                         @for (dayName of dayNames; track $index) {
                             <div class="day-name">{{ dayName }}</div>
                         }
 
-                        <!-- Cuadrícula de días -->
                         @for (day of monthGrid(); track day.date.getTime()) {
                             <div 
                                 class="calendar-day" 
@@ -75,10 +66,8 @@
                                 [class.has-events]="hasEvents(day.date)"
                                 (click)="openEventosModal()"
                             >
-                                <!-- Número del día -->
                                 <span class="font-semibold text-base">{{ day.date.getDate() }}</span>
                                 
-                                <!-- Simulación de evento o tarea -->
                                 @if (hasEvents(day.date)) {
                                     <span class="event-marker">Tarea</span>
                                 }
@@ -96,13 +85,10 @@
         </div>
     </main>
 
-    <!-- ---------------- RIGHT SIDEBAR (Componente app-semana) ---------------- -->
     <app-semana ></app-semana>
 
-    <!-- ---------------- MODAL DE EVENTOS ---------------- -->
     @if (modalEventosOpen()) {
       <div class="modal-overlay" (click)="closeEventosModal()">
-        <!-- Se añaden atributos ARIA para accesibilidad -->
         <div 
             class="modal eventos-modal" 
             (click)="$event.stopPropagation()"
@@ -111,19 +97,16 @@
             aria-modal="true"
         >
 
-          <!-- Header modal -->
           <div class="modal-header">
             <h2 id="eventos-modal-title">📌 Eventos</h2> 
             <button class="btn-close" (click)="closeEventosModal()" aria-label="Cerrar modal">✕</button>
           </div>
 
-          <!-- Acciones: nuevo evento -->
           <div class="modal-actions-top">
             <button class="btn-primary" (click)="startAgregar()">+ Nuevo Evento</button>
             <span class="muted">{{ eventos().length }} evento(s)</span>
           </div>
 
-          <!-- Lista de eventos -->
           <div class="event-list">
             @if (eventos().length === 0) {
               <div class="empty">No hay eventos todavía.</div>
@@ -133,7 +116,6 @@
                   <div class="event-info">
                     <div class="event-title">{{ evt.titulo }}</div>
                     <div class="event-date">{{ evt.fecha | date:'EEEE d MMM y' }}</div>
-                    <!-- Uso de @if para la descripción -->
                     @if (evt.descripcion) {
                         <div class="event-desc">{{ evt.descripcion }}</div>
                     }
@@ -147,7 +129,6 @@
             }
           </div>
 
-          <!-- FORMULARIO (aparece cuando agregando() o editando() != null) -->
           @if (agregando() || editando() !== null) {
             <hr class="form-divider" />
             <div class="form-section">
