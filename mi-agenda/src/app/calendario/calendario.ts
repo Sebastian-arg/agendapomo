@@ -1,9 +1,8 @@
 import { Component, signal, computed, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-// Importación corregida para el componente de la sidebar derecha
-// Ajustá la ruta si tu archivo se llama diferente o está en otra ubicación (ej: '../semana/semana')
+import { Router } from '@angular/router';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { SemanaComponent } from '../semana/semana';
 
 type ViewMode = 'month' | 'week';
@@ -17,15 +16,14 @@ interface CalendarDay {
 interface CalendarEvent {
   id: number;
   titulo: string;
-  fecha: string; // ISO date string 'YYYY-MM-DD'
+  fecha: string;
   descripcion?: string;
 }
 
 @Component({
   selector: 'app-calendario',
   standalone: true,
-  // Importaciones: CommonModule, DatePipe, FormsModule, y SemanaComponent
-  imports: [CommonModule, DatePipe, SemanaComponent, FormsModule],
+  imports: [CommonModule, DatePipe, SemanaComponent, FormsModule, HttpClientModule], 
   providers: [DatePipe],  
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './calendario.html',
@@ -33,12 +31,11 @@ interface CalendarEvent {
 })
 export class CalendarioComponent implements OnInit {
 
-  // Vista y fecha actual
   viewMode = signal<ViewMode>('month');
   current = signal<Date>(new Date());
   readonly dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-  // --- Lógica del Grid Mensual ---
+
   monthGrid = computed<CalendarDay[]>(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -66,7 +63,6 @@ export class CalendarioComponent implements OnInit {
     return days;
   });
 
-  // Navegación
   setViewMode(mode: ViewMode): void { this.viewMode.set(mode); }
   navigate(amount: number): void {
     this.current.update(currentDate => {
@@ -78,9 +74,6 @@ export class CalendarioComponent implements OnInit {
   }
   setToday(): void { this.current.set(new Date()); }
 
-  // -----------------------
-  // 🟣 MODAL / CRUD EVENTOS
-  // -----------------------
   modalEventosOpen = signal(false);
   eventos = signal<CalendarEvent[]>([]);
   agregando = signal(false);
@@ -91,13 +84,15 @@ export class CalendarioComponent implements OnInit {
   eventoDescripcion = '';
   private nextId = 1;
 
-  constructor(private datePipe: DatePipe) {}
+  constructor(
+    private datePipe: DatePipe, 
+    private router: Router, 
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
-    // Ejemplo de evento (simula la tarea del día 5)
     const currentMonth = this.current().getMonth() + 1; // 1-12
     const currentYear = this.current().getFullYear();
-    
     this.eventos.set([
       { 
         id: this.nextId++, 
@@ -178,7 +173,6 @@ export class CalendarioComponent implements OnInit {
 
   eliminarEvento(id: number) {
     console.warn(`Simulando confirmación: Eliminando evento con ID ${id}`);
-    
     this.eventos.update(prev => prev.filter(e => e.id !== id));
     if (this.editando() === id) this.cancelForm();
   }
@@ -188,4 +182,22 @@ export class CalendarioComponent implements OnInit {
     return this.eventos().some(e => e.fecha === dateStr);
   }
 
+  logout() {
+    const apiUrl = 'http://localhost:8000/api/logout'; 
+
+    this.http.post(apiUrl, {}).subscribe({
+      next: () => {
+        console.log('Sesión cerrada en el servidor.');
+  },
+      error: (error) => {
+        console.warn('Error al cerrar sesión en Laravel. Limpiando sesión local...', error);
+      },
+      complete: () => {
+        localStorage.removeItem('user_token');
+        localStorage.removeItem('user_details');
+
+        this.router.navigate(['/login']);
+      }
+    });
+  }
 }
