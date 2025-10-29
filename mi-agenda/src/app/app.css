@@ -7,9 +7,11 @@
   --accent-color: #47bdd8;
   --background-color-start: #004aad;
   --background-color-end: #cb6ce6;
+  width: 100%;
 }
 
 .home-container {
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
