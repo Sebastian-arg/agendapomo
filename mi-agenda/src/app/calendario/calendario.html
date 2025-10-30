@@ -21,15 +21,12 @@
         <span>Eventos</span>
       </button>
 
-      <a routerLink="/tareas" (click)="openEventosModal()">
+      <button class="menu-item" (click)="openTareasModal()">
         <i class="fa-regular fa-circle-check"></i>
         <span>Tareas</span>
-      </a>
+      </button>
 
-      <a routerLink="/configuracion" routerLinkActive="active">
-        <i class="fa-solid fa-gear"></i>
-        <span>Configuración</span>
-      </a>
+
     </nav>
 
     <div class="sidebar-footer">
@@ -91,6 +88,33 @@
         </div>
         }
       </div>
+
+       <div class="calendar-content">
+        <!-- ✅ Modal de TAREAS -->
+        @if (modalTareasOpen()) {
+        <div class="modal-overlay" (click)="closeTareasModal()">
+          <div class="modal tareas-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h2>🗒️ Tareas</h2>
+              <button class="btn-close" (click)="closeTareasModal()">✕</button>
+            </div>
+        
+            <div class="modal-actions-top">
+              <button class="btn-primary">+ Nueva Tarea</button>
+              <span class="muted">0 tarea(s)</span>
+            </div>
+        
+            <div class="event-list">
+              <div class="empty">No hay tareas todavía.</div>
+            </div>
+          </div>
+        </div>
+        }
+
+       </div>
+
+
+
     </div>
   </main>
 
@@ -107,7 +131,7 @@
       </div>
 
       <div class="modal-actions-top">
-        <button class="btn-primary" (click)="startAgregar()">+ Nuevo Evento</button>
+        <button class="btn-primary" (click)="startAgregarEvento()">+ Nuevo Evento</button>
         <span class="muted">{{ eventos().length }} evento(s)</span>
       </div>
 
@@ -131,7 +155,7 @@
           </div>
 
           <div class="event-actions">
-            <button class="btn-sm" (click)="startEditar(evt.id)">Editar</button>
+            <button class="btn-sm" (click)="startEditarEvento(evt.id)">Editar</button>
             <button class="btn-sm danger" (click)="eliminarEvento(evt.id)">Borrar</button>
           </div>
         </div>
@@ -140,12 +164,12 @@
         }
       </div>
 
-      @if (agregando() || editando() !== null) {
+      @if (agregandoEvento() || editandoEvento() !== null) {
       <hr class="form-divider" />
 
       <div class="form-section">
         <h3>
-          @if (editando() !== null) { Editar Evento } @else { Nuevo Evento }
+          @if (editandoEvento() !== null) { Editar Evento } @else { Nuevo Evento }
         </h3>
 
         <label for="eventoTitulo">Título</label>
@@ -158,7 +182,7 @@
         <textarea rows="3" id="eventoDescripcion" [(ngModel)]="eventoDescripcion"></textarea>
 
         <div class="form-actions">
-          <button class="btn-cancel" (click)="cancelForm()">Cancelar</button>
+          <button class="btn-cancel" (click)="cancelarFormularioEvento()">Cancelar</button>
           <button class="btn-save" (click)="guardarEvento()">Guardar</button>
         </div>
       </div>
@@ -167,4 +191,74 @@
     </div>
   </div>
   }
+
+  @if (modalTareasOpen()) {
+  <div class="modal-overlay" (click)="closeTareasModal()">
+    <div class="modal tareas-modal" (click)="$event.stopPropagation()" role="dialog"
+         aria-labelledby="tareas-modal-title" aria-modal="true">
+
+      <div class="modal-header">
+        <h2 id="tareas-modal-title">🗒️ Tareas</h2>
+        <button class="btn-close" (click)="closeTareasModal()">✕</button>
+      </div>
+
+      <div class="modal-actions-top">
+        <button class="btn-primary" (click)="startAgregarTarea()">+ Nueva Tarea</button>
+        <span class="muted">{{ tareas().length }} tarea(s)</span>
+      </div>
+
+      <div class="event-list">
+        @if (tareas().length === 0) {
+          <div class="empty">No hay tareas todavía.</div>
+        } @else {
+          @for (t of tareas(); track t.id) {
+            <div class="event-item">
+              <div class="event-info">
+                <div class="event-title">{{ t.titulo }}</div>
+                <div class="event-date">
+                  {{ t.fecha_inicio | date:'EEEE d MMM y' }}
+                </div>
+                @if (t.descripcion) {
+                  <div class="event-desc">{{ t.descripcion }}</div>
+                }
+              </div>
+
+              <div class="event-actions">
+                <button class="btn-sm" (click)="startEditarTarea(t.id)">Editar</button>
+                <button class="btn-sm danger" (click)="eliminarTarea(t.id)">Borrar</button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      @if (agregandoTarea() || editandoTarea() !== null) {
+        <hr class="form-divider" />
+
+        <div class="form-section">
+          <h3>
+            @if (editandoTarea() !== null) { Editar Tarea } @else { Nueva Tarea }
+          </h3>
+
+          <label for="tareaTitulo">Título</label>
+          <input type="text" id="tareaTitulo" [(ngModel)]="tareaTitulo" />
+
+          <label for="tareaFecha">Fecha</label>
+          <input type="date" id="tareaFecha" [(ngModel)]="tareaFecha" />
+
+          <label for="tareaDescripcion">Descripción</label>
+          <textarea rows="3" id="tareaDescripcion" [(ngModel)]="tareaDescripcion"></textarea>
+
+          <div class="form-actions">
+            <button class="btn-cancel" (click)="cancelarFormularioTarea()">Cancelar</button>
+            <button class="btn-save" (click)="guardarTarea()">Guardar</button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+
+
 </div>

@@ -22,8 +22,6 @@ import { EventosService } from '../services/eventos.service';
 
 registerLocaleData(localeEsAr, 'es-AR');
 
-
-
 type ViewMode = 'month' | 'week';
 
 interface CalendarDay {
@@ -55,23 +53,41 @@ interface CalendarEvent {
 })
 export class CalendarioComponent implements OnInit {
 
-  // Estado del calendario
+  /* ===============================
+   * 🗓️ ESTADO GENERAL
+   * =============================== */
   viewMode = signal<ViewMode>('month');
   current = signal<Date>(new Date());
 
-  // Estado de eventos
+  readonly dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+  /* ===============================
+   * 📅 EVENTOS
+   * =============================== */
   eventos = signal<CalendarEvent[]>([]);
   modalEventosOpen = signal(false);
-
-  agregando = signal(false);
-  editando = signal<number | null>(null);
+  agregandoEvento = signal(false);
+  editandoEvento = signal<number | null>(null);
 
   eventoTitulo = '';
   eventoFecha = '';
   eventoDescripcion = '';
 
-  readonly dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  /* ===============================
+   * ✅ TAREAS
+   * =============================== */
+  tareas = signal<CalendarEvent[]>([]);
+  modalTareasOpen = signal(false);
+  agregandoTarea = signal(false);
+  editandoTarea = signal<number | null>(null);
 
+  tareaTitulo = '';
+  tareaFecha = '';
+  tareaDescripcion = '';
+
+  /* ===============================
+   * 📅 CALENDARIO
+   * =============================== */
   monthGrid = computed<CalendarDay[]>(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -103,6 +119,9 @@ export class CalendarioComponent implements OnInit {
     return days;
   });
 
+  /* ===============================
+   * ⚙️ CONSTRUCTOR
+   * =============================== */
   constructor(
     private datePipe: DatePipe,
     private router: Router,
@@ -114,52 +133,51 @@ export class CalendarioComponent implements OnInit {
     this.cargarEventos();
   }
 
-  /** ✅ Cargar eventos desde Laravel */
+  /* ===============================
+   * 🎯 EVENTOS CRUD
+   * =============================== */
+
   cargarEventos() {
     this.eventosService.getAll().subscribe({
       next: (data) => this.eventos.set(data),
-      error: (err) => console.error("ERROR cargando eventos:", err)
+      error: (err) => console.error('ERROR cargando eventos:', err)
     });
   }
 
-  /** ✅ Modal */
   openEventosModal() {
     this.modalEventosOpen.set(true);
-    this.cancelForm(false);
+    this.modalTareasOpen.set(false);
+    this.cancelarFormularioEvento(false);
   }
 
   closeEventosModal() {
     this.modalEventosOpen.set(false);
-    this.cancelForm(false);
+    this.cancelarFormularioEvento(false);
   }
 
-  /** ✅ Nueva creación */
-  startAgregar() {
-    this.agregando.set(true);
-    this.editando.set(null);
-
+  startAgregarEvento() {
+    this.agregandoEvento.set(true);
+    this.editandoEvento.set(null);
     this.eventoTitulo = '';
     this.eventoFecha = this.datePipe.transform(new Date(), 'yyyy-MM-dd') || '';
     this.eventoDescripcion = '';
   }
 
-  /** ✅ Edición */
-  startEditar(id: number) {
+  startEditarEvento(id: number) {
     const evt = this.eventos().find(e => e.id === id);
     if (!evt) return;
 
-    this.agregando.set(false);
-    this.editando.set(id);
+    this.agregandoEvento.set(false);
+    this.editandoEvento.set(id);
 
     this.eventoTitulo = evt.titulo;
     this.eventoFecha = evt.fecha_inicio;
     this.eventoDescripcion = evt.descripcion || '';
   }
 
-  /** ✅ Limpiar formulario */
-  cancelForm(close = true) {
-    this.agregando.set(false);
-    this.editando.set(null);
+  cancelarFormularioEvento(close = true) {
+    this.agregandoEvento.set(false);
+    this.editandoEvento.set(null);
     this.eventoTitulo = '';
     this.eventoFecha = '';
     this.eventoDescripcion = '';
@@ -167,7 +185,6 @@ export class CalendarioComponent implements OnInit {
     if (close) this.modalEventosOpen.set(false);
   }
 
-  /** ✅ Guardar (Crear o Editar) */
   guardarEvento() {
     const data = {
       titulo: this.eventoTitulo.trim(),
@@ -176,54 +193,126 @@ export class CalendarioComponent implements OnInit {
     };
 
     if (!data.titulo || !data.fecha_inicio) {
-      alert("Completar título y fecha");
+      alert('Completar título y fecha');
       return;
     }
 
-    // ✅ Editar
-    if (this.editando() !== null) {
-      const id = this.editando()!;
-
+    if (this.editandoEvento() !== null) {
+      const id = this.editandoEvento()!;
       this.eventosService.update(id, data).subscribe({
         next: (actualizado) => {
           this.eventos.update(prev =>
             prev.map(e => e.id === id ? actualizado : e)
           );
-          this.cancelForm();
+          this.cancelarFormularioEvento();
         }
       });
-
       return;
     }
 
-    // ✅ Crear nuevo
     this.eventosService.create(data).subscribe({
       next: (nuevo) => {
         this.eventos.update(prev => [...prev, nuevo]);
-        this.cancelForm();
+        this.cancelarFormularioEvento();
       }
     });
   }
 
-  /** ✅ Borrar */
   eliminarEvento(id: number) {
-    if (!confirm("¿Eliminar este evento?")) return;
+    if (!confirm('¿Eliminar este evento?')) return;
 
     this.eventosService.delete(id).subscribe({
-      next: () =>
-        this.eventos.update(prev => prev.filter(e => e.id !== id))
+      next: () => this.eventos.update(prev => prev.filter(e => e.id !== id))
     });
 
-    if (this.editando() === id) this.cancelForm();
+    if (this.editandoEvento() === id) this.cancelarFormularioEvento();
   }
 
-  /** ✅ Ver si un día tiene eventos */
+  /* ===============================
+   * 📝 TAREAS CRUD (local por ahora)
+   * =============================== */
+
+  openTareasModal() {
+    this.modalTareasOpen.set(true);
+    this.modalEventosOpen.set(false);
+    this.cancelarFormularioTarea(false);
+  }
+
+  closeTareasModal() {
+    this.modalTareasOpen.set(false);
+  }
+
+  startAgregarTarea() {
+    this.agregandoTarea.set(true);
+    this.editandoTarea.set(null);
+
+    this.tareaTitulo = '';
+    this.tareaFecha = this.datePipe.transform(new Date(), 'yyyy-MM-dd') || '';
+    this.tareaDescripcion = '';
+  }
+
+  startEditarTarea(id: number) {
+    const t = this.tareas().find(e => e.id === id);
+    if (!t) return;
+
+    this.agregandoTarea.set(false);
+    this.editandoTarea.set(id);
+
+    this.tareaTitulo = t.titulo;
+    this.tareaFecha = t.fecha_inicio;
+    this.tareaDescripcion = t.descripcion || '';
+  }
+
+  cancelarFormularioTarea(close = true) {
+    this.agregandoTarea.set(false);
+    this.editandoTarea.set(null);
+    this.tareaTitulo = '';
+    this.tareaFecha = '';
+    this.tareaDescripcion = '';
+
+    if (close) this.modalTareasOpen.set(false);
+  }
+
+  guardarTarea() {
+    const data = {
+      titulo: this.tareaTitulo.trim(),
+      fecha_inicio: this.tareaFecha,
+      descripcion: this.tareaDescripcion
+    };
+
+    if (!data.titulo || !data.fecha_inicio) {
+      alert('Completar título y fecha');
+      return;
+    }
+
+    if (this.editandoTarea() !== null) {
+      const id = this.editandoTarea()!;
+      this.tareas.update(prev =>
+        prev.map(t => t.id === id ? { ...t, ...data } : t)
+      );
+      this.cancelarFormularioTarea();
+      return;
+    }
+
+    const nueva = { id: Date.now(), ...data };
+    this.tareas.update(prev => [...prev, nueva]);
+    this.cancelarFormularioTarea();
+  }
+
+  eliminarTarea(id: number) {
+    if (!confirm('¿Eliminar esta tarea?')) return;
+    this.tareas.update(prev => prev.filter(t => t.id !== id));
+    if (this.editandoTarea() === id) this.cancelarFormularioTarea();
+  }
+
+  /* ===============================
+   * 📆 UTILIDADES DEL CALENDARIO
+   * =============================== */
   hasEvents(date: Date): boolean {
     const d = this.datePipe.transform(date, 'yyyy-MM-dd');
     return this.eventos().some(e => e.fecha_inicio === d);
   }
 
-  /** ✅ Navegación del calendario */
   navigate(amount: number): void {
     this.current.update(cur => {
       const newDate = new Date(cur.getTime());
@@ -243,7 +332,9 @@ export class CalendarioComponent implements OnInit {
     this.viewMode.set(mode);
   }
 
-  /** ✅ Logout */
+  /* ===============================
+   * 🚪 LOGOUT
+   * =============================== */
   logout() {
     const token = localStorage.getItem('user_token');
 
@@ -251,8 +342,7 @@ export class CalendarioComponent implements OnInit {
       'http://localhost:8000/api/logout',
       {},
       { headers: { Authorization: `Bearer ${token}` } }
-    )
-    .subscribe({
+    ).subscribe({
       complete: () => {
         localStorage.removeItem('user_token');
         localStorage.removeItem('user_details');
