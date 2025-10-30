@@ -1,41 +1,11 @@
-
-💻 1. Configuración y Ejecución del Frontend (Angular)
-
-Estas instrucciones asumen que te encuentras dentro del directorio raíz del frontend (/mi-agenda ).
-
-Instalar dependencias de Node.js:
-
+->en el front<-
 npm install
-
-
-Ejecutar el servidor de desarrollo:
-
 ng serve -o
 
-
-(La bandera -o abrirá automáticamente la aplicación en tu navegador web.)
-
-⚙️ 2. Configuración y Ejecución del Backend (Laravel)
-
-Estas instrucciones asumen que te encuentras dentro del directorio raíz del backend (/back o donde se encuentre tu proyecto Laravel).
-
-A. Preparación Inicial
-
-Instalar dependencias de Composer:
-
+-> en el back<-
 composer install
-
-
-Crear el archivo de configuración .env:
-
 cp .env.example .env
-
-
-Configurar el archivo .env:
-Abre el archivo .env recién creado y reemplaza su contenido con la siguiente configuración.
-
-Nota: La clave APP_KEY que se muestra a continuación será actualizada automáticamente con un valor único en el siguiente paso (php artisan key:generate).
-
+copiar este código en la nueva carpeta .env
 APP_NAME=Laravel
 APP_ENV=local
 APP_KEY=base64:CMFse1S5VVcXZEYQ+ccCO2ocKCKxA7SjPsCbjPkjf3I=
@@ -57,7 +27,6 @@ LOG_STACK=single
 LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=debug
 
-# Configuración de Base de Datos
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -100,23 +69,8 @@ AWS_DEFAULT_REGION=us-east-1
 AWS_BUCKET=
 AWS_USE_PATH_STYLE_ENDPOINT=false
 
-VITE_APP_NAME="${APP_NAME}"
-
-
-B. Finalización y Ejecución
-
-Generar la clave de aplicación:
-
-php artisan key:generate
-
-
-Iniciar el servidor de desarrollo de Laravel:
-
-php artisan serve
-
-
-(Asegúrate de tener corriendo tu servidor de base de datos, como MySQL o MariaDB, antes de ejecutar el backend.)
-
+VITE_APP_NAME="${APP_NAME}" 
 
 php artisan key:generate
 php artisan serve
+
