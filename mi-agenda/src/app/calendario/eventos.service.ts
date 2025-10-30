@@ -13,7 +13,6 @@ export class TareasService {
 
   constructor(private http: HttpClient) {}
 
-  // ✅ Crear headers con token de localStorage de forma segura
   private getHeaders() {
     let token = '';
     if (typeof window !== 'undefined') {
@@ -25,22 +24,18 @@ export class TareasService {
     };
   }
 
-  // ✅ Obtener todas las tareas
   getTareas(): Observable<any> {
     return this.http.get(this.apiUrl, { headers: this.getHeaders() });
   }
 
-  // ✅ Crear nueva tarea
   crearTarea(data: { titulo: string; fecha_limite: string; descripcion?: string }): Observable<any> {
     return this.http.post(this.apiUrl, data, { headers: this.getHeaders() });
   }
 
-  // ✅ Actualizar tarea
   actualizarTarea(id: number, data: { titulo: string; fecha_limite: string; descripcion?: string }): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, data, { headers: this.getHeaders() });
   }
 
-  // ✅ Eliminar tarea
   eliminarTarea(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
