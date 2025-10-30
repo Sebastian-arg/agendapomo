@@ -308,10 +308,17 @@ export class CalendarioComponent implements OnInit {
   /* ===============================
    * 📆 UTILIDADES DEL CALENDARIO
    * =============================== */
+  /** ✅ Ver si un día tiene tareas */
+  hasTareas(date: Date): boolean {
+    const d = this.datePipe.transform(date, 'yyyy-MM-dd');
+    return this.tareas().some(t => t.fecha_inicio === d);
+  }
+  /** ✅ Ver si un día tiene eventos */
   hasEvents(date: Date): boolean {
     const d = this.datePipe.transform(date, 'yyyy-MM-dd');
     return this.eventos().some(e => e.fecha_inicio === d);
   }
+
 
   navigate(amount: number): void {
     this.current.update(cur => {

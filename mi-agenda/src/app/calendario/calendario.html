@@ -73,9 +73,17 @@
 
             <span class="font-semibold text-base">{{ day.date.getDate() }}</span>
 
-            @if (hasEvents(day.date)) {
-            <span class="event-marker">Evento</span>
-            }
+          
+              <!-- Mostrar marcador si hay eventos -->
+              @if (hasEvents(day.date)) {
+                <span class="event-marker evento">Evento</span>
+              }
+
+              <!-- Mostrar marcador si hay tareas -->
+              @if (hasTareas(day.date)) {
+                <span class="event-marker tarea">Tarea</span>
+              }
+            
           </div>
           }
         </div>

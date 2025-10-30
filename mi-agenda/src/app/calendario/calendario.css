@@ -339,15 +339,28 @@
 }
 
 /* Marca de Evento/Tarea */
+/* ---------- MARCADORES EN EL CALENDARIO ---------- */
 .event-marker {
-    font-size: 0.75rem;
-    color: var(--dark-color);
-    background-color: #fce4ec; /* Fondo suave para el texto de la tarea */
-    padding: 2px 4px;
-    border-radius: 4px;
-    margin-top: 4px;
-    align-self: flex-start; /* Alinea la tarea a la izquierda */
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  display: inline-block;
+  font-weight: 600;
 }
+
+/* Evento: morado */
+.event-marker.evento {
+  background-color: #E4A0A6; /* rosa pastel */
+  color: #581971; /* morado oscuro */
+}
+
+/* Tarea: azul */
+.event-marker.tarea {
+  background-color: #C9E6FF; /* celeste suave */
+  color: #00529B; /* azul fuerte */
+}
+
 
 
 .right-sidebar-content {
