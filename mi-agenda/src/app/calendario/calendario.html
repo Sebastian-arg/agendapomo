@@ -35,7 +35,7 @@
             date:'dd/MM/yyyy' }}.</p>
         </div> } </div>
     </div>
-  </main> <app-semana></app-semana> @if (modalEventosOpen()) { <div class="modal-overlay" (click)="closeEventosModal()">
+  </main> @if (modalEventosOpen()) { <div class="modal-overlay" (click)="closeEventosModal()">
     <div class="modal eventos-modal" (click)="$event.stopPropagation()" role="dialog"
       aria-labelledby="eventos-modal-title" aria-modal="true">
       <div class="modal-header">
