@@ -284,7 +284,6 @@ guardarTarea() {
     return;
   }
 
-  // ✅ EDITAR
   if (this.editandoTarea() !== null) {
     const id = this.editandoTarea()!;
     this.tareasService.actualizarTarea(id, data).subscribe({
@@ -297,7 +296,6 @@ guardarTarea() {
     return;
   }
 
-  // ✅ CREAR
   this.tareasService.crearTarea(data).subscribe({
     next: () => {
       this.cargarTareas();
@@ -319,7 +317,6 @@ eliminarTarea(id: number) {
   });
 }
 
-
   hasTareas(date: Date): boolean {
     const dayKey = this.datePipe.transform(date, 'yyyy-MM-dd');
 
@@ -336,6 +333,7 @@ eliminarTarea(id: number) {
         return eventDateKey === dayKey;
     });
   }
+
 
   navigate(amount: number): void {
     this.current.update(cur => {
