@@ -62,8 +62,181 @@
     @if (viewMode() === 'month') {
     <div class="calendar-month-grid">
 
+
+        <h2 class="month-year">
+          {{ current() | date:'MMMM yyyy' | titlecase }}
+        </h2>
+
+        <div class="view-switch">
+          <button class="view-btn" [class.active]="viewMode() === 'month'" (click)="setViewMode('month')">Mes</button>
+          <button class="view-btn" [class.active]="viewMode() === 'week'" (click)="setViewMode('week')">Semana</button>
+        </div>
+      </div>
+
+      <div class="calendar-content">
+        @if (viewMode() === 'month') {
+        <div class="calendar-month-grid">
+
+          @for (dayName of dayNames; track $index) {
+          <div class="day-name">{{ dayName }}</div>
+          }
+
+          @for (day of monthGrid(); track day.date.getTime()) {
+          <div class="calendar-day"
+              [class.is-current-month]="day.isCurrentMonth"
+              [class.is-today]="day.isToday"
+              [class.has-events]="hasEvents(day.date)"
+              (click)="openEventosModal()">
+
+            <span class="font-semibold text-base">{{ day.date.getDate() }}</span>
+
+          
+              <!-- Mostrar marcador si hay eventos -->
+              @if (hasEvents(day.date)) {
+                <span class="event-marker evento">Evento</span>
+              }
+
+              <!-- Mostrar marcador si hay tareas -->
+              @if (hasTareas(day.date)) {
+                <span class="event-marker tarea">Tarea</span>
+              }
+            
+          </div>
+          }
+        </div>
+        } @else {
+        <div class="calendar-week-view">
+          <h3 class="text-xl font-bold mb-2">Vista Semanal (Próximamente)</h3>
+          <p class="text-gray-600">
+            Semana que inicia el {{ current() | date:'dd/MM/yyyy' }}.
+          </p>
+        </div>
+        }
+      </div>
+
+       <div class="calendar-content">
+        <!-- ✅ Modal de TAREAS -->
+        @if (modalTareasOpen()) {
+        <div class="modal-overlay" (click)="closeTareasModal()">
+          <div class="modal tareas-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h2>🗒️ Tareas</h2>
+              <button class="btn-close" (click)="closeTareasModal()">✕</button>
+            </div>
+        
+            <div class="modal-actions-top">
+              <button class="btn-primary">+ Nueva Tarea</button>
+              <span class="muted">0 tarea(s)</span>
+            </div>
+        
+            <div class="event-list">
+              <div class="empty">No hay tareas todavía.</div>
+            </div>
+          </div>
+        </div>
+        }
+
+       </div>
+
+
+
+    </div>
+  </main>
+
+
+  @if (modalEventosOpen()) {
+  <div class="modal-overlay" (click)="closeEventosModal()">
+
+    <div class="modal eventos-modal" (click)="$event.stopPropagation()" role="dialog"
+      aria-labelledby="eventos-modal-title" aria-modal="true">
+
+      <div class="modal-header">
+        <h2 id="eventos-modal-title">📌 Eventos</h2>
+        <button class="btn-close" (click)="closeEventosModal()" aria-label="Cerrar modal">✕</button>
+      </div>
+
+      <div class="modal-actions-top">
+        <button class="btn-primary" (click)="startAgregarEvento()">+ Nuevo Evento</button>
+        <span class="muted">{{ eventos().length }} evento(s)</span>
+      </div>
+
+      <div class="event-list">
+        @if (eventos().length === 0) {
+        <div class="empty">No hay eventos todavía.</div>
+        } @else {
+
+        @for (evt of eventos(); track evt.id) {
+        <div class="event-item">
+          <div class="event-info">
+            <div class="event-title">{{ evt.titulo }}</div>
+
+          <div class="event-date">
+            {{ evt.fecha_inicio | date:'EEEE d MMM y' }}
+            <span class="event-time">
+              ({{ evt.fecha_inicio | date:'HH:mm' }}
+              -
+              {{ evt.fecha_fin ? (evt.fecha_fin | date:'HH:mm') : 'Sin hora fin' }})
+            </span>
+          </div>
+
+
+            @if (evt.descripcion) {
+            <div class="event-desc">{{ evt.descripcion }}</div>
+            }
+          </div>
+
+          <div class="event-actions">
+            <button class="btn-sm" (click)="startEditarEvento(evt.id)">Editar</button>
+            <button class="btn-sm danger" (click)="eliminarEvento(evt.id)">Borrar</button>
+          </div>
+        </div>
+        }
+
+        }
+      </div>
+
+      @if (agregandoEvento() || editandoEvento() !== null) {
+      <hr class="form-divider" />
+
+      <div class="form-section">
+        <h3>
+          @if (editandoEvento() !== null) { Editar Evento } @else { Nuevo Evento }
+        </h3>
+
+        <label for="eventoTitulo">Título</label>
+        <input type="text" id="eventoTitulo" [(ngModel)]="eventoTitulo" />
+
+        <label for="eventoFecha">Fecha</label>
+        <input type="date" id="eventoFecha" [(ngModel)]="eventoFecha" />
+        <div class="form-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="eventoConHora" />
+            Evento con horario específico
+          </label>
+        </div>
+
+        <!-- Campos de hora solo visibles si el toggle está activado -->
+        <div *ngIf="eventoConHora">
+          <label for="horaInicio">Hora de inicio</label>
+          <input type="time" id="horaInicio" [(ngModel)]="eventoHoraInicio" />
+
+          <label for="horaFin">Hora de fin</label>
+          <input type="time" id="horaFin" [(ngModel)]="eventoHoraFin" />
+        </div>
+
+
+        <label for="eventoDescripcion">Descripción</label>
+        <textarea rows="3" id="eventoDescripcion" [(ngModel)]="eventoDescripcion"></textarea>
+      
+        <div class="form-actions">
+          <button class="btn-cancel" (click)="cancelarFormularioEvento()">Cancelar</button>
+          <button class="btn-save" (click)="guardarEvento()">Guardar</button>
+        </div>
+      </div>
+
       @for (dayName of dayNames; track $index) {
       <div class="day-name">{{ dayName }}</div>
+
       }
 
       @for (day of monthGrid(); track day.date.getTime()) {
