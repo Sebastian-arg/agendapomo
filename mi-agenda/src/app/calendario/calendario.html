@@ -1,9 +1,10 @@
 <div class="app-container">
 <div class="sidebar">
-<div class="logo-container">
+<!-- ✅ El logo ahora es un enlace para volver a la vista principal del calendario -->
+<a routerLink="/calendario" class="logo-container">
 <i class="fa-solid fa-calendar-check logo-icon"></i>
 <h2 class="logo">AgendaPersonal</h2>
-</div>
+</a>
 
 <nav class="menu">
   <button class="menu-item" (click)="openEventosModalList()">
@@ -11,13 +12,13 @@
     <span>Eventos</span>
   </button>
 
-  <!-- ✅ Botón del menú lateral abre la vista de LISTA de Tareas -->
   <button class="menu-item" (click)="openTareasModalList()">
     <i class="fa-regular fa-circle-check"></i>
     <span>Tareas</span>
   </button>
 
-  <button class="menu-item" routerLink="/pomodoro">
+  <!-- ✅ routerLink actualizado para la ruta anidada -->
+  <button class="menu-item" routerLink="./pomodoro">
     <i class="fa-solid fa-stopwatch"></i>
     <span>Pomodoro</span>
   </button>
@@ -30,11 +31,15 @@
   </button>
 </div>
 
-
 </div>
 
 <main class="main-content">
-<div class="calendar-view" *ngIf="router.url !== '/pomodoro'">
+
+<!-- ✅ RouterOutlet para renderizar rutas hijas como Pomodoro -->
+<router-outlet #o="outlet"></router-outlet>
+
+<!-- ✅ El calendario se oculta si una ruta hija está activa -->
+<div class="calendar-view" *ngIf="!o.isActivated">
 <div class="calendar-controls">
 <div class="nav-buttons">
 <button class="control-btn" (click)="navigate(-1)" aria-label="Anterior">&leftarrow;</button>
@@ -68,20 +73,14 @@
 
         <span class="font-semibold text-base">{{ day.date.getDate() }}</span>
 
-        <!-- PLURALIZACIÓN DE MARCADORES -->
-
-        <!-- Mostrar marcador si hay eventos -->
         @if (countEvents(day.date) > 0) {
           <span class="event-marker evento">
-            <!-- Si es 1, muestra "Evento"; si es > 1, muestra "Eventos" -->
             @if (countEvents(day.date) === 1) { Evento } @else { Eventos }
           </span>
         }
 
-        <!-- Mostrar marcador si hay tareas -->
         @if (countTareas(day.date) > 0) {
           <span class="event-marker tarea">
-            <!-- Si es 1, muestra "Tarea"; si es > 1, muestra "Tareas" -->
             @if (countTareas(day.date) === 1) { Tarea } @else { Tareas }
           </span>
         }
@@ -100,34 +99,22 @@
   </div>
 </div>
 
-<router-outlet></router-outlet>
-
 </main>
 
-<!-- ===================================== -->
-
-<!-- 1. MODAL DE SELECCIÓN DE ACCIÓN (NUEVO) -->
-
-<!-- ===================================== -->
+<!-- Modales (Eventos, Tareas, etc.) -->
 
 @if (modalSeleccionOpen() && selectedDate()) {
 <div class="modal-overlay" (click)="closeSelectionModal()">
-<div class="modal selection-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+<div class="modal selection-modal" (click)="$event.stopPropagation()">
 <div class="modal-header">
-<h2>
-  Añadir a {{ selectedDate() | date:'EEEE, d MMMM' | titlecase }}
-</h2>
-<button class="btn-close" (click)="closeSelectionModal()" aria-label="Cerrar modal">✕</button>
+<h2>Añadir a {{ selectedDate() | date:'EEEE, d MMMM' | titlecase }}</h2>
+<button class="btn-close" (click)="closeSelectionModal()">✕</button>
 </div>
-
     <div class="selection-actions">
-      <!-- Cierra este modal y abre el formulario de Eventos precargado -->
-      <button class="btn-primary" id="boton-nuevo-evento" (click)="addNewEvent()">
+      <button class="btn-primary" (click)="addNewEvent()">
         <i class="fa-regular fa-clock"></i>
         <span>Nuevo Evento</span>
       </button>
-      
-      <!-- Cierra este modal y abre el formulario de Tareas precargado -->
       <button class="btn-primary" (click)="addNewTask()">
         <i class="fa-regular fa-circle-check"></i>
         <span>Nueva Tarea</span>
@@ -135,116 +122,72 @@
     </div>
   </div>
 </div>
-
-
 }
 
-<!-- ===================================== -->
-
-<!-- 2. MODAL DE EVENTOS (LISTA Y FORMULARIO) -->
-
-<!-- ===================================== -->
-
 @if (modalEventosOpen()) {
-
 <div class="modal-overlay" (click)="closeEventosModal()">
-
-<div class="modal eventos-modal" (click)="$event.stopPropagation()" role="dialog"
-  aria-labelledby="eventos-modal-title" aria-modal="true">
-
+<div class="modal eventos-modal" (click)="$event.stopPropagation()">
   <div class="modal-header">
-    <h2 id="eventos-modal-title">📌 Eventos</h2>
-    <button class="btn-close" (click)="closeEventosModal()" aria-label="Cerrar modal">✕</button>
+    <h2>📌 Eventos</h2>
+    <button class="btn-close" (click)="closeEventosModal()">✕</button>
   </div>
-
   <div class="modal-actions-top">
-    <!-- Llama a startAgregarEvento sin fecha precargada (si se abre desde el menú) -->
     <button class="btn-primary" (click)="startAgregarEvento()">+ Nuevo Evento</button>
     <span class="muted">{{ eventos().length }} evento(s)</span>
   </div>
-
   <div class="event-list">
     @if (eventos().length === 0) {
     <div class="empty">No hay eventos todavía.</div>
     } @else {
-
     @for (evt of eventos(); track evt.id) {
       <div class="event-item">
         <div class="event-info">
           <div class="event-title">{{ evt.titulo }}</div>
-
-          <div class="event-date">
-            {{ evt.fecha_inicio | date:'EEEE d MMM y' }}
-          </div>
-
+          <div class="event-date">{{ evt.fecha_inicio | date:'EEEE d MMM y' }}</div>
           @if (evt.descripcion) {
           <div class="event-desc">{{ evt.descripcion }}</div>
           }
         </div>
-
         <div class="event-actions">
           <button class="btn-sm" (click)="startEditarEvento(evt.id)">Editar</button>
           <button class="btn-sm danger" (click)="eliminarEvento(evt.id)">Borrar</button>
         </div>
       </div>
     }
-
     }
   </div>
 
   @if (agregandoEvento() || editandoEvento() !== null) {
   <hr class="form-divider" />
-
   <div class="form-section">
-    <h3>
-      @if (editandoEvento() !== null) { Editar Evento } @else { Nuevo Evento }
-    </h3>
-
+    <h3>@if (editandoEvento() !== null) { Editar Evento } @else { Nuevo Evento }</h3>
     <label for="eventoTitulo">Título</label>
     <input type="text" id="eventoTitulo" [(ngModel)]="eventoTitulo" />
-
     <label for="eventoFecha">Fecha</label>
     <input type="date" id="eventoFecha" [(ngModel)]="eventoFecha" />
-
     <label for="eventoDescripcion">Descripción</label>
     <textarea rows="3" id="eventoDescripcion" [(ngModel)]="eventoDescripcion"></textarea>
-
     <div class="form-actions">
       <button class="btn-cancel" (click)="cancelarFormularioEvento()">Cancelar</button>
       <button class="btn-save" (click)="guardarEvento()">Guardar</button>
     </div>
   </div>
   }
-
 </div>
-
-
 </div>
 }
 
-<!-- ===================================== -->
-
-<!-- 3. MODAL DE TAREAS (LISTA Y FORMULARIO) -->
-
-<!-- ===================================== -->
-
 @if (modalTareasOpen()) {
-
 <div class="modal-overlay" (click)="closeTareasModal()">
-<div class="modal tareas-modal" (click)="$event.stopPropagation()" role="dialog"
-aria-labelledby="tareas-modal-title" aria-modal="true">
-
+<div class="modal tareas-modal" (click)="$event.stopPropagation()">
   <div class="modal-header">
-    <h2 id="tareas-modal-title">🗒️ Tareas</h2>
+    <h2>🗒️ Tareas</h2>
     <button class="btn-close" (click)="closeTareasModal()">✕</button>
   </div>
-
   <div class="modal-actions-top">
-    <!-- Llama a startAgregarTarea sin fecha precargada (si se abre desde el menú) -->
     <button class="btn-primary" (click)="startAgregarTarea()">+ Nueva Tarea</button>
     <span class="muted">{{ tareas().length }} tarea(s)</span>
   </div>
-
   <div class="event-list">
     @if (tareas().length === 0) {
       <div class="empty">No hay tareas todavía.</div>
@@ -253,14 +196,11 @@ aria-labelledby="tareas-modal-title" aria-modal="true">
         <div class="event-item">
           <div class="event-info">
             <div class="event-title">{{ t.titulo }}</div>
-            <div class="event-date">
-              {{ t.fecha_limite | date:'EEEE d MMM y' }}
-            </div>
+            <div class="event-date">{{ t.fecha_limite | date:'EEEE d MMM y' }}</div>
             @if (t.descripcion) {
               <div class="event-desc">{{ t.descripcion }}</div>
             }
           </div>
-
           <div class="event-actions">
             <button class="btn-sm" (click)="startEditarTarea(t.id)">Editar</button>
             <button class="btn-sm danger" (click)="eliminarTarea(t.id)">Borrar</button>
@@ -272,21 +212,14 @@ aria-labelledby="tareas-modal-title" aria-modal="true">
 
   @if (agregandoTarea() || editandoTarea() !== null) {
     <hr class="form-divider" />
-
     <div class="form-section">
-      <h3>
-        @if (editandoTarea() !== null) { Editar Tarea } @else { Nueva Tarea }
-      </h3>
-
+      <h3>@if (editandoTarea() !== null) { Editar Tarea } @else { Nueva Tarea }</h3>
       <label for="tareaTitulo">Título</label>
       <input type="text" id="tareaTitulo" [(ngModel)]="tareaTitulo" />
-
       <label for="tareaFecha">Fecha</label>
       <input type="date" id="tareaFecha" [(ngModel)]="tareaFecha" />
-
       <label for="tareaDescripcion">Descripción</label>
       <textarea rows="3" id="tareaDescripcion" [(ngModel)]="tareaDescripcion"></textarea>
-
       <div class="form-actions">
         <button class="btn-cancel" (click)="cancelarFormularioTarea()">Cancelar</button>
         <button class="btn-save" (click)="guardarTarea()">Guardar</button>
@@ -294,8 +227,6 @@ aria-labelledby="tareas-modal-title" aria-modal="true">
     </div>
   }
 </div>
-
-
 </div>
 }
 
